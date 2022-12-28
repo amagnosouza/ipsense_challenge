@@ -1,0 +1,44 @@
+version: "3.9"
+services:
+  postgres-db:
+    image: postgres:14-alpine
+    hostname: postgres-db
+    container_name: postgres-db
+    restart: always
+    environment:
+      POSTGRES_USER: pguser
+      POSTGRES_PASSWORD: senhaforte
+      POSTGRES_DB: db_teste
+    ports:
+      - 5432:5432
+  web_api:
+    hostname: web_api
+    container_name: web_api
+    build:
+      context: ./api
+      dockerfile: ./Dockerfile
+    environment:
+      PORT: 8081
+      DB: "postgres://pguser:senhaforte@localhost:5432/db_teste"
+      DB_HOST: postgres-db
+      DB_USER: pguser
+      DB_DATABASE: db_teste
+      DB_PASSWORD: senhaforte
+      DB_PORT: 5432
+    ports:
+      - 8081:8081
+    depends_on:
+      - postgres-db
+  web_frontend:
+    hostname: web_frontend
+    container_name: web_frontend
+    build:
+      context: ./web
+      dockerfile: ./Dockerfile
+    environment:
+      PORT: 8080
+      API_HOST: http://web_api:8081
+    ports:
+      - 8080:8080
+    depends_on:
+      - web_api
